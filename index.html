@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Device Control</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            background-color: #f5f8fc;
+        }
+
+        .split {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .console {
+            flex: 1;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #d0d7e0;
+            border-radius: 5px;
+            background: #ffffff;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .console h3 {
+            margin: 0;
+            padding: 10px;
+            background-color: #0078d4;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .console-content {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.9rem;
+            overflow-y: auto;
+        }
+
+        .right {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 50px;
+        }
+
+        .button {
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-align: center;
+            cursor: pointer;
+            background-color: #0078d4;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #005fa3;
+        }
+
+        .button:active {
+            background-color: #003f73;
+        }
+
+        .button:disabled {
+            background-color: #d0d7e0;
+            color: #a0a0a0;
+            cursor: not-allowed;
+        }
+
+        .full-row {
+            grid-column: span 3;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            border: 1px solid #d0d7e0;
+            border-radius: 5px;
+            background-color: #0078d4;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .dropdown:hover {
+            background-color: #005fa3;
+        }
+
+        .service-button {
+            position: absolute;
+            top: 10px;
+            right: 140px;
+            padding: 10px;
+            border: 1px solid #d0d7e0;
+            border-radius: 5px;
+            background-color: lightgreen;
+            color: black;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .service-button:hover {
+            opacity: 0.8;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .modal-button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-button.no {
+            background-color: gray;
+            color: white;
+        }
+
+        .modal-button.yes {
+            background-color: lightgreen;
+            color: black;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .split {
+                flex: none;
+                height: auto;
+            }
+
+            .console {
+                margin-bottom: 15px;
+            }
+
+            .right {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="service-button" id="serviceButton">Service Mode</button>
+    <select class="dropdown" id="modeSelect">
+        <option value="control">Control</option>
+        <option value="test">Test</option>
+    </select>
+
+    <!-- Modal for Service Mode -->
+    <div class="modal" id="serviceModal">
+        <p>Is the Device in Service Mode?</p>
+        <div class="modal-buttons">
+            <button class="modal-button no" id="modalNo">No</button>
+            <button class="modal-button yes" id="modalYes">Yes</button>
+        </div>
+    </div>
+
+    <!-- Left Split Screen -->
+    <div class="split">
+        <div class="console">
+            <h3>To Device</h3>
+            <div class="console-content" id="toDeviceConsole">
+                <!-- Outgoing messages will appear here -->
+            </div>
+        </div>
+        <div class="console">
+            <h3>From Device</h3>
+            <div class="console-content" id="fromDeviceConsole">
+                <!-- Incoming messages will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Split Screen -->
+    <div class="split right">
+        <button class="button" onclick="handleKey('A')">A</button>
+        <button class="button" onclick="handleKey('1')">1</button>
+        <button class="button" onclick="handleKey('2')">2</button>
+        <button class="button" onclick="handleKey('B')">B</button>
+        <button class="button" onclick="handleKey('3')">3</button>
+        <button class="button" onclick="handleKey('4')">4</button>
+        <button class="button" onclick="handleKey('C')">C</button>
+        <button class="button" onclick="handleKey('5')">5</button>
+        <button class="button" onclick="handleKey('6')">6</button>
+        <button class="button" onclick="handleKey('D')">D</button>
+        <button class="button" onclick="handleKey('7')">7</button>
+        <button class="button" onclick="handleKey('8')">8</button>
+        <button class="button" onclick="handleKey('E')">E</button>
+        <button class="button" onclick="handleKey('9')">9</button>
+        <button class="button" onclick="handleKey('0')">0</button>
+        <button class="button" onclick="handleKey('F')">F</button>
+        <button class="button" onclick="handleKey('*')">*</button>
+        <button class="button" onclick="handleKey('#')">#</button>
+        <button class="button" onclick="handleKey('G')">G</button>
+        <button class="button" onclick="handleKey('H')">H</button>
+        <button class="button" onclick="handleKey('J')">J</button>
+        <button class="button full-row" id="nickelButton" disabled onclick="releaseKey('nickel')">Release 1 Nickel</button>
+        <button class="button full-row" id="quarterButton" disabled onclick="releaseKey('quarter')">Release 1 Quarter</button>
+    </div>
+
+    <script>
+        const toDeviceConsole = document.getElementById('toDeviceConsole');
+        const fromDeviceConsole = document.getElementById('fromDeviceConsole');
+        const modeSelect = document.getElementById('modeSelect');
+        const serviceButton = document.getElementById('serviceButton');
+        const serviceModal = document.getElementById('serviceModal');
+        const modalYes = document.getElementById('modalYes');
+        const modalNo = document.getElementById('modalNo');
+        const nickelButton = document.getElementById('nickelButton');
+        const quarterButton = document.getElementById('quarterButton');
+
+        let serviceModeActive = false;
+        let awaitingKeycode = false;
+        let inactivityTimeout;
+
+        modeSelect.addEventListener('change', () => {
+            toDeviceConsole.innerHTML = '';
+            fromDeviceConsole.innerHTML = '';
+        });
+
+        serviceButton.addEventListener('click', () => {
+            if (!serviceModeActive) {
+                serviceModal.classList.add('active');
+            } else {
+                deactivateServiceMode();
+            }
+        });
+
+        modalYes.addEventListener('click', () => {
+            activateServiceMode();
+            serviceModal.classList.remove('active');
+        });
+
+        modalNo.addEventListener('click', () => {
+            serviceModal.classList.remove('active');
+        });
+
+        function activateServiceMode() {
+            serviceModeActive = true;
+            serviceButton.style.backgroundColor = 'lightorange';
+            serviceButton.textContent = 'Service Mode (Active)';
+            nickelButton.disabled = false;
+            quarterButton.disabled = false;
+            if (modeSelect.value === 'test') {
+                logToConsole(toDeviceConsole, 'Service Mode Status: Active');
+            }
+            resetInactivityTimeout();
+        }
+
+        function deactivateServiceMode() {
+            serviceModeActive = false;
+            awaitingKeycode = false;
+            serviceButton.style.backgroundColor = 'lightgreen';
+            serviceButton.textContent = 'Service Mode';
+            nickelButton.disabled = true;
+            quarterButton.disabled = true;
+            clearTimeout(inactivityTimeout);
+        }
+
+        function resetInactivityTimeout() {
+            clearTimeout(inactivityTimeout);
+            inactivityTimeout = setTimeout(() => {
+                deactivateServiceMode();
+            }, 25000);
+        }
+
+        function handleKey(key) {
+            logToConsole(toDeviceConsole, `Key '${key}' Sent`);
+
+            if (serviceModeActive) {
+                if (key === '1' && !awaitingKeycode) {
+                    awaitingKeycode = true;
+                    resetInactivityTimeout();
+                    setTimeout(() => {
+                        if (modeSelect.value === 'test') {
+                            logToConsole(fromDeviceConsole, `Key '1' Registered.   Dispense Mode: Awaiting Keycode`);
+                        }
+                    }, 3000);
+                } else if (awaitingKeycode && (key === 'A' || key === 'C')) {
+                    const coin = key === 'A' ? 'Nickel' : 'Quarter';
+                    setTimeout(() => {
+                        if (modeSelect.value === 'test') {
+                            logToConsole(fromDeviceConsole, `Key '${key}' Registered\nDispensed 1 ${coin}`);
+                        }
+                    }, 3000);
+                    awaitingKeycode = false; // Reset awaiting keycode for next dispense
+                } else if (!awaitingKeycode) {
+                    resetInactivityTimeout();
+                    if (modeSelect.value === 'test') {
+                        setTimeout(() => {
+                            logToConsole(fromDeviceConsole, `Key '${key}' Registered`);
+                        }, 3000);
+                    }
+                }
+            } else if (modeSelect.value === 'test') {
+                setTimeout(() => {
+                    logToConsole(fromDeviceConsole, `Key '${key}' Registered`);
+                }, 3000);
+            }
+        }
+
+        function releaseKey(type) {
+            if (!serviceModeActive) return;
+            handleKey('1');
+            setTimeout(() => {
+                handleKey(type === 'nickel' ? 'A' : 'C');
+            }, 3000);
+        }
+
+        function logToConsole(consoleElement, message) {
+            const entry = document.createElement('div');
+            entry.textContent = message;
+            consoleElement.appendChild(entry);
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+        }
+    </script>
+</body>
+</html>
